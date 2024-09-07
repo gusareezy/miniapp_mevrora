@@ -30,7 +30,7 @@ export default function Homepage() {
 
     
     return (
-        <div className="flex grow flex-col gap-10">
+        <div className="flex grow flex-col gap-10"> 
             {data.map((item) => (
                 <div>
                     <HomeTransaction address="123" victim="123" value="123" pnl={item.backrunValue} />
