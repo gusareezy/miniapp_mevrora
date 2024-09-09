@@ -1,6 +1,7 @@
 FROM python:3.11.9-slim
 
-RUN pip install flask flask-cors
+RUN pip install flask flask-cors fastapi uvicorn pydantic
 COPY . .
-
-CMD ["python", "main.py"]
+EXPOSE 5000
+#CMD ["python", "db1.py"]
+CMD ["python", "back.py"]

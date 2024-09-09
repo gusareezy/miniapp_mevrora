@@ -1,47 +1,55 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import sqlite3
-from db1 import get_transactions,get_user_settings,update_user_settings
-app = Flask(__name__)
-CORS(app)
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import uvicorn
+import os
+from db1 import get_transactions, get_user_settings, update_user_settings,create_user_settings_db,create_bundle_db
 
+app = FastAPI()
 
+# Добавляем поддержку CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Можно указать конкретные домены
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+class UserSettings(BaseModel):
+    telegram_id: str
+    settings: dict
 
-
-@app.route('/get_user_settings', methods=['GET'])
-def get_user_settings_api():
-    telegram_id = request.args.get('telegram_id')
+@app.get("/get_user_settings")
+async def get_user_settings_api(telegram_id: str):
     if not telegram_id:
-        return jsonify({"error": "telegram_id is required"}), 400
+        raise HTTPException(status_code=400, detail="telegram_id is required")
     
     settings = get_user_settings(telegram_id)
     if settings:
-        return jsonify(settings)
+        return settings
     else:
-        return jsonify({"error": "User not found"}), 404
+        raise HTTPException(status_code=404, detail="User not found")
 
-
-@app.route('/get_transactions', methods=['GET'])
-def get_transactions_api():
+@app.get("/get_transactions")
+async def get_transactions_api():
     transactions = get_transactions()
-    return jsonify(transactions)
+    print(111)
+    return transactions
 
-
-
-@app.route('/update_user_settings', methods=['POST'])
-def update_user_settings_api():
-    data = request.json
-    telegram_id = data.get('telegram_id')
-    settings = data.get('settings')
+@app.post("/api/update_user_settings")
+async def update_user_settings_api(user_settings: UserSettings):
+    telegram_id = user_settings.telegram_id
+    settings = user_settings.settings
     
     if not telegram_id or not settings:
-        return jsonify({"error": "telegram_id and settings are required"}), 400
+        raise HTTPException(status_code=400, detail="telegram_id and settings are required")
     
     update_user_settings(telegram_id, settings)
-    return jsonify({"message": "User settings updated successfully"})
-
-
+    return {"message": "User settings updated successfully"}
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    os.remove("database.db")
+    create_user_settings_db()
+    create_bundle_db()
+    uvicorn.run(app, host="0.0.0.0", port=5000)

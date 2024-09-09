@@ -7,7 +7,7 @@ export default function Homepage() {
 
     const fetchData = async () => {
         try {
-                const response = await fetch('http://localhost:5000/get_transactions'); 
+                const response = await fetch('http://localhost/api/get_transactions'); 
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -30,10 +30,10 @@ export default function Homepage() {
 
     
     return (
-        <div className="flex grow flex-col gap-10"> 
+        <div className="flex grow flex-col gap-10">
             {data.map((item) => (
                 <div>
-                    <HomeTransaction address="123" victim="123" value="123" pnl={item.backrunValue} />
+                    <HomeTransaction address="123" victim="123" value="123" pnl={item.back} />
                 </div>
             ))}
         </div>
